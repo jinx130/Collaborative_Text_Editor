@@ -1,6 +1,7 @@
 package com.yourname.editor.config;
 
 import com.yourname.editor.collaboration.CollaborationWebSocketHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -18,15 +19,18 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final CollaborationWebSocketHandler handler;
+    private final String frontendUrl;
 
-    public WebSocketConfig(CollaborationWebSocketHandler handler) {
+    public WebSocketConfig(CollaborationWebSocketHandler handler,
+            @Value("${FRONTEND_URL:https://change-me.vercel.app}") String frontendUrl) {
         this.handler = handler;
+        this.frontendUrl = frontendUrl;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(handler, "/ws/collab")
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
-                .setAllowedOrigins("https://collaborative_text_editor.vercel.app");  // i need to change this to my actual url
+                .setAllowedOrigins("http://localhost:5173", frontendUrl);
     }
 }

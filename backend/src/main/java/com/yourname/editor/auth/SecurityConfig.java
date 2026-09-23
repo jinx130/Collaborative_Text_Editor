@@ -1,5 +1,6 @@
 package com.yourname.editor.auth;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -28,6 +29,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+
+    // Set on Render as FRONTEND_URL=https://<your-app>.vercel.app.
+    // Falls back to localhost so local Vite dev keeps working.
+    @Value("${FRONTEND_URL:https://change-me.vercel.app}")
+    private String frontendUrl;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -64,9 +70,7 @@ public class SecurityConfig {
     {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("\"http://localhost:5173\",\n" +
-                "\"https://collaborative_text_editor.vercel.app\""));
-        // i have to change this url
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", frontendUrl));
         configuration.setAllowedMethods(List.of("GET",
                 "POST",
                 "PUT",
