@@ -1,8 +1,12 @@
 package com.yourname.editor.ot;
 
+import java.util.Objects;
+
 /**
- * Single retain/insert/delete component (§4).
- * TODO: implement on your own.
+ * Single retain/insert/delete component (Wave-style operation model).
+ * Mirrors the blog's operation types: insert/delete/retain, but as
+ * components of a composite {@link Operation} instead of single
+ * position-based ops.
  */
 public class OperationComponent {
 
@@ -13,62 +17,94 @@ public class OperationComponent {
     }
 
     private Type type;
-    private int count;
+    // Integer (not int): Jackson 3 fails on missing JSON properties for
+    // primitives, and browser INSERT components legitimately omit "count".
+    private Integer count;
     private String text;
 
     public OperationComponent() {
     }
 
-    public OperationComponent(Type type, int count, String text) {
-        // TODO: implement
+    public OperationComponent(Type type, Integer count, String text) {
         this.type = type;
-        this.count = count;
-        this.text = text;
+        if (type == Type.INSERT) {
+            this.text = text == null ? "" : text;
+            this.count = this.text.length();
+        } else {
+            this.text = null;
+            this.count = count == null ? 0 : count;
+        }
     }
 
     public static OperationComponent retain(int count) {
-        // TODO: implement
+        if (count <= 0) {
+            throw new IllegalArgumentException("retain count must be > 0");
+        }
         return new OperationComponent(Type.RETAIN, count, null);
     }
 
     public static OperationComponent insert(String text) {
-        // TODO: implement
-        return new OperationComponent(Type.INSERT, text == null ? 0 : text.length(), text);
+        if (text == null || text.isEmpty()) {
+            throw new IllegalArgumentException("insert text must be non-empty");
+        }
+        return new OperationComponent(Type.INSERT, text.length(), text);
     }
 
     public static OperationComponent delete(int count) {
-        // TODO: implement
+        if (count <= 0) {
+            throw new IllegalArgumentException("delete count must be > 0");
+        }
         return new OperationComponent(Type.DELETE, count, null);
     }
 
     public boolean isRetain() {
-        // TODO: implement
         return type == Type.RETAIN;
     }
 
     public boolean isInsert() {
-        // TODO: implement
         return type == Type.INSERT;
     }
 
     public boolean isDelete() {
-        // TODO: implement
         return type == Type.DELETE;
     }
 
+    /** Chars consumed from base document (retain + delete). */
     public int baseLength() {
-        // TODO: implement
-        return 0;
+        if (type == null) {
+            return 0;
+        }
+        switch (type) {
+            case RETAIN:
+            case DELETE:
+                return getCount();
+            case INSERT:
+            default:
+                return 0;
+        }
     }
 
+    /** Chars produced in target document (retain + insert). */
     public int targetLength() {
-        // TODO: implement
-        return 0;
+        if (type == null) {
+            return 0;
+        }
+        switch (type) {
+            case RETAIN:
+                return getCount();
+            case INSERT:
+                return text == null ? 0 : text.length();
+            case DELETE:
+            default:
+                return 0;
+        }
     }
 
     public int insertLength() {
-        // TODO: implement
-        return 0;
+        if (!isInsert() || text == null) {
+            return 0;
+        }
+        return text.length();
     }
 
     public Type getType() {
@@ -80,10 +116,13 @@ public class OperationComponent {
     }
 
     public int getCount() {
-        return count;
+        if (isInsert()) {
+            return text == null ? 0 : text.length();
+        }
+        return count == null ? 0 : count;
     }
 
-    public void setCount(int count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
 
@@ -97,19 +136,37 @@ public class OperationComponent {
 
     @Override
     public boolean equals(Object o) {
-        // TODO: implement
-        return super.equals(o);
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OperationComponent)) {
+            return false;
+        }
+        OperationComponent that = (OperationComponent) o;
+        return getCount() == that.getCount()
+                && type == that.type
+                && Objects.equals(text, that.text);
     }
 
     @Override
     public int hashCode() {
-        // TODO: implement
-        return super.hashCode();
+        return Objects.hash(type, getCount(), text);
     }
 
     @Override
     public String toString() {
-        // TODO: implement
-        return super.toString();
+        if (type == null) {
+            return "unknown";
+        }
+        switch (type) {
+            case RETAIN:
+                return "retain(" + count + ")";
+            case INSERT:
+                return "insert(\"" + text + "\")";
+            case DELETE:
+                return "delete(" + count + ")";
+            default:
+                return "unknown";
+        }
     }
 }
