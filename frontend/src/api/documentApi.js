@@ -1,6 +1,7 @@
 import { authHeaders } from './authApi.js';
+import { api } from './config.js';
 
-const BASE = '/api/documents';
+const BASE = api('/api/documents');
 
 async function handle(res) {
   if (res.status === 204) return null;

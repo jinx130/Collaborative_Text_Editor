@@ -1,3 +1,5 @@
+import { api } from './config.js';
+
 export class AuthError extends Error {
   constructor(status, message) {
     super(message ?? `Request failed: ${status}`);
@@ -55,7 +57,7 @@ function storeAuth(payload) {
 }
 
 export async function signup({ email, name, password }) {
-  const res = await fetch('/api/auth/signup', {
+  const res = await fetch(api('/api/auth/signup'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, name, password }),
@@ -64,7 +66,7 @@ export async function signup({ email, name, password }) {
 }
 
 export async function login({ email, password }) {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(api('/api/auth/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -73,13 +75,13 @@ export async function login({ email, password }) {
 }
 
 export async function fetchMe() {
-  const res = await fetch('/api/auth/me', { headers: authHeaders() });
+  const res = await fetch(api('/api/auth/me'), { headers: authHeaders() });
   return handle(res);
 }
 
 export async function logout() {
   try {
-    await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() });
+    await fetch(api('/api/auth/logout'), { method: 'POST', headers: authHeaders() });
   } catch {
     // ignore server errors on logout
   }

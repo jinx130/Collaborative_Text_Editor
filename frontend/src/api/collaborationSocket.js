@@ -136,8 +136,18 @@ export function createCollaborationSocket({ url, documentId, clientId, name, tok
   };
 }
 
+import { API_BASE, WS_URL } from './config.js';
+
 export function wsUrl(docIdHint) {
   void docIdHint;
+  // Prod (Vercel + Render): explicit override wins, e.g.
+  // VITE_WS_URL=wss://<your-backend>.onrender.com/ws/collab
+  if (WS_URL) return WS_URL;
+  // Derive from the API base when it is absolute, e.g.
+  // VITE_API_URL=https://<your-backend>.onrender.com -> wss://.../ws/collab
+  if (API_BASE && /^https?:\/\//i.test(API_BASE)) {
+    return `${API_BASE.replace(/^http/i, 'ws')}/ws/collab`;
+  }
   const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
   // Same-origin so Vite proxy handles it in dev; in prod serve WS from same host.
   return `${proto}://${window.location.host}/ws/collab`;

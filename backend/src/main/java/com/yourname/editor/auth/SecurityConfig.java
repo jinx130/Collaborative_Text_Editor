@@ -65,7 +65,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("\"http://localhost:5173\",\n" +
-                "                \"https://your-app.vercel.app\""));
+                "\"https://collaborative_text_editor.vercel.app\""));
         // i have to change this url
         configuration.setAllowedMethods(List.of("GET",
                 "POST",

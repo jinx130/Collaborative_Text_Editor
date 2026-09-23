@@ -27,6 +27,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(handler, "/ws/collab")
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
-                .setAllowedOrigins("*");  // i need to change this to my actual url
+                .setAllowedOrigins("https://collaborative_text_editor.vercel.app");  // i need to change this to my actual url
     }
 }
